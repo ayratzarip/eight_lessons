@@ -13,10 +13,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
+import { ThemeToggle } from "./theme-toggle";
+import { ClientOnly } from "./client-only";
+import { useHydration } from "@/hooks/useHydration";
 
 export function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const isHydrated = useHydration();
 
   // Get user's initials for avatar fallback
   const getInitials = (name: string) => {
@@ -29,38 +33,43 @@ export function Header() {
   };
 
   return (
-    <header className="border-b bg-white">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Image
-            src="/assets/diamond_logo_green.png"
-            alt="EightFaces Logo"
-            width={32}
-            height={32}
-            className="w-8 h-8"
-          />
+    <header className="glass-effect border-b border-border/20 sticky top-0 z-50">
+      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Image
+              src="/assets/diamond_logo_green.png"
+              alt="EightFaces Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
+          </div>
           <a 
             href="https://eightfaces.ru" 
-            className="text-gray-800 font-bold text-lg hover:text-green-600 transition-colors"
+            className="ai-gradient-text font-bold text-lg hover:scale-105 transition-transform duration-200"
           >
             EightFaces: Soft Skills Engine
           </a>
         </div>
-        <nav className="flex items-center space-x-4">
-          {session ? (
+        <nav className="flex items-center space-x-3">
+          <ClientOnly>
+            <ThemeToggle />
+          </ClientOnly>
+          {isHydrated && session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="rounded-full p-0 w-9 h-9"
+                  className="rounded-full p-0 w-10 h-10 glass-effect hover:ai-glow transition-all duration-300"
                   aria-label="User menu"
                 >
-                  <Avatar className="h-9 w-9">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage
                       src={session.user?.image || ""}
                       alt={session.user?.name || "User"}
                     />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
                       {session.user?.name ? (
                         getInitials(session.user.name)
                       ) : (
@@ -70,29 +79,34 @@ export function Header() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="flex flex-col space-y-1 p-2">
-                  <p className="text-sm font-medium leading-none">
+              <DropdownMenuContent align="end" className="w-56 ai-card">
+                <div className="flex flex-col space-y-1 p-3">
+                  <p className="text-sm font-semibold leading-none">
                     {session.user?.name}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {session.user?.email}
                   </p>
                 </div>
-                <DropdownMenuItem asChild>
-                  <Link href="/account">Личный кабинет</Link>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/account" className="flex items-center">
+                    Личный кабинет
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut({ callbackUrl: "/" })}
+                  className="cursor-pointer text-red-500 focus:text-red-600"
                 >
                   Выйти
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-            <Button variant="outline" asChild>
+          ) : isHydrated ? (
+            <Button variant="outline" asChild className="ai-button">
               <Link href="/auth/signin">Вход</Link>
             </Button>
+          ) : (
+            <div className="w-20 h-10 bg-muted rounded animate-pulse"></div>
           )}
         </nav>
       </div>

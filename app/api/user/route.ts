@@ -27,7 +27,18 @@ export async function GET() {
       include: {
         accounts: true,
         sessions: true,
-        progress: true
+        progress: {
+          include: {
+            lesson: {
+              include: {
+                module: true
+              }
+            }
+          },
+          orderBy: {
+            updatedAt: 'desc'
+          }
+        }
       }
     });
     

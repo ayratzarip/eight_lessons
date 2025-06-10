@@ -2,7 +2,6 @@
 
 import { ReactNode } from 'react';
 import { Header } from './header';
-import { Footer } from './footer';
 
 export function LayoutWithFooter({ children }: { children: ReactNode }) {
   return (
@@ -11,7 +10,6 @@ export function LayoutWithFooter({ children }: { children: ReactNode }) {
       <div className="flex-grow">
         {children}
       </div>
-      <Footer />
     </div>
   );
 }

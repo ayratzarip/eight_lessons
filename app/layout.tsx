@@ -42,7 +42,7 @@ export default function RootLayout({
           }
         `}</script>
       </head>
-      <body className={`${inter.variable} ${openSans.variable} font-sans`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${openSans.variable} font-sans`}>
         <Providers>{children}</Providers>
       </body>
     </html>

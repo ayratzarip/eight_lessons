@@ -300,7 +300,7 @@ export default function QuizComponent({ lessonId, onComplete }: QuizProps) {
         </CardHeader>
         <CardContent>
           {results.map((result, index) => (
-            <div key={result.questionId} className="mb-6 pb-6 border-b border-gray-200 last:border-0 last:mb-0 last:pb-0">
+            <div key={result.questionId} className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700 last:border-0 last:mb-0 last:pb-0">
               <div className="flex items-start gap-2 mb-2">
                 {result.isCorrect ? (
                   <CheckCircle className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
@@ -321,7 +321,7 @@ export default function QuizComponent({ lessonId, onComplete }: QuizProps) {
                           ) : (
                             <XCircle className="h-4 w-4 text-red-500" />
                           )}
-                          <span className={option.isCorrect ? 'text-green-600' : 'text-red-600'}>
+                          <span className={option.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                             {option.text}
                           </span>
                         </li>
@@ -332,19 +332,19 @@ export default function QuizComponent({ lessonId, onComplete }: QuizProps) {
                   {/* Correct options (if answer was wrong) */}
                   {!result.isCorrect && result.correctOptions && result.correctOptions.length > 0 && (
                     <div className="mt-2">
-                      <p className="font-medium mb-1 text-green-600">Правильные варианты:</p>
+                      <p className="font-medium mb-1 text-green-600 dark:text-green-400">Правильные варианты:</p>
                       <ul className="ml-2 space-y-1">
                         {result.correctOptions.map(option => (
                           <li key={option.id} className="flex items-center gap-2">
                             <CheckSquare className="h-4 w-4 text-green-500" />
-                            <span className="text-green-600">{option.text}</span>
+                            <span className="text-green-600 dark:text-green-400">{option.text}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
                   
-                  <p className="mt-2 bg-gray-50 p-3 rounded-md">
+                  <p className="mt-2 bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
                     {result.feedback}
                   </p>
                 </div>
@@ -385,20 +385,20 @@ export default function QuizComponent({ lessonId, onComplete }: QuizProps) {
               if (isChecked) {
                 if (isSelected && optionIsCorrect) {
                   // Selected correct answer
-                  itemStyle = "border-green-500 bg-green-50";
+                  itemStyle = "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400";
                 } else if (isSelected && !optionIsCorrect) {
                   // Selected incorrect answer
-                  itemStyle = "border-red-500 bg-red-50";
+                  itemStyle = "border-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-400";
                 } else if (!isSelected && optionIsCorrect) {
                   // Missed correct answer
-                  itemStyle = "border-amber-500 bg-amber-50";
+                  itemStyle = "border-amber-500 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-400";
                 } else {
                   // Correctly not selected
-                  itemStyle = "border-gray-200";
+                  itemStyle = "border-gray-200 dark:border-gray-700";
                 }
               } else {
                 // Not checked yet
-                itemStyle = isSelected ? "border-green-500 bg-green-50" : "border-gray-200 hover:bg-gray-50";
+                itemStyle = isSelected ? "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400" : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800";
               }
               
               return (
@@ -417,14 +417,14 @@ export default function QuizComponent({ lessonId, onComplete }: QuizProps) {
                     <Label htmlFor={option.id} className={`flex-grow ${!isChecked ? 'cursor-pointer' : ''}`}>
                       {option.text}
                       {isChecked && optionIsCorrect && (
-                        <span className="ml-2 text-xs font-medium text-green-600">(правильный ответ)</span>
+                        <span className="ml-2 text-xs font-medium text-green-600 dark:text-green-400">(правильный ответ)</span>
                       )}
                     </Label>
                   </div>
                   
                   {/* Individual feedback for this option */}
                   {isChecked && isSelected && (
-                    <div className={`ml-8 mt-1 text-sm p-2 rounded ${optionIsCorrect ? 'text-green-700 bg-green-50' : 'text-red-700 bg-red-50'}`}>
+                    <div className={`ml-8 mt-1 text-sm p-2 rounded ${optionIsCorrect ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20' : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20'}`}>
                       {optionIsCorrect 
                         ? (option.correctComment || 'Правильно!')
                         : (option.incorrectComment || 'Неправильно!')
