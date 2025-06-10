@@ -34,37 +34,67 @@ export async function GET() {
       }
     });
     
-    // If the user is authenticated, fetch their progress
+    // If the user is authenticated, fetch their progress and module access
     let userProgress: { userId: string, lessonId: string, completed: boolean }[] = [];
+    let userModuleAccess: { moduleId: string }[] = [];
+    let userModulePurchases: { moduleId: string }[] = [];
+    
     if (userId) {
       userProgress = await prisma.userProgress.findMany({
         where: {
           userId: userId
         }
       });
+      
+      // Get modules the user has explicit access to
+      userModuleAccess = await prisma.moduleAccess.findMany({
+        where: {
+          userId: userId
+        },
+        select: {
+          moduleId: true
+        }
+      });
+      
+      // Get modules the user has purchased
+      userModulePurchases = await prisma.modulePurchase.findMany({
+        where: {
+          userId: userId
+        },
+        select: {
+          moduleId: true
+        }
+      });
     }
     
     // Map the modules to include accessibility info
     const modulesWithAccess = modules.map((module, moduleIndex) => {
-      // First module is always accessible
-      let isModuleAccessible = moduleIndex === 0;
+      // Check module accessibility based on new system
+      let isModuleAccessible = false;
+      let accessReason = '';
       
-      // For subsequent modules, check if the last lesson of the previous module is completed
-      if (!isModuleAccessible && moduleIndex > 0) {
-        const previousModule = modules[moduleIndex - 1];
-        if (previousModule.lessons.length > 0) {
-          // Get the last lesson of the previous module (highest order)
-          const lastLesson = previousModule.lessons.reduce((prev, current) => 
-            prev.order > current.order ? prev : current
-          );
-          
-          // Check if this last lesson is completed
-          isModuleAccessible = userProgress.some(progress => 
-            progress.lessonId === lastLesson.id && progress.completed
-          );
-        } else {
-          // If the previous module has no lessons, make this module accessible
+      // Check if module is free (price = 0)
+      const isFreeModule = module.price === 0 || module.price === null;
+      
+      if (isFreeModule) {
+        isModuleAccessible = true;
+        accessReason = 'free';
+      } else {
+        // Check if user has purchased the module
+        const hasPurchased = userModulePurchases.some(purchase => purchase.moduleId === module.id);
+        
+        // Check if user has been granted access by admin
+        const hasAdminAccess = userModuleAccess.some(access => access.moduleId === module.id);
+        
+        if (hasPurchased) {
           isModuleAccessible = true;
+          accessReason = 'purchased';
+        } else if (hasAdminAccess) {
+          isModuleAccessible = true;
+          accessReason = 'admin_granted';
+        } else {
+          isModuleAccessible = false;
+          accessReason = 'locked';
         }
       }
       
@@ -110,6 +140,7 @@ export async function GET() {
       return {
         ...module,
         isAccessible: isModuleAccessible,
+        accessReason: accessReason,
         lessons: lessonsWithAccess
       };
     });

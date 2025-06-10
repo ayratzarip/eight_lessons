@@ -13,12 +13,15 @@ import { Header } from "@/components/ui/header";
 export default function AccountPage() {
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<any>(null);
+  const [moduleData, setModuleData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [moduleLoading, setModuleLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
       fetchUserData();
+      fetchModuleData();
     }
   }, [status, session]);
 
@@ -33,6 +36,34 @@ export default function AccountPage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchModuleData = async () => {
+    try {
+      setModuleLoading(true);
+      
+      // Fetch user's module access
+      const accessRes = await fetch(`/api/user/module-access`);
+      if (!accessRes.ok) throw new Error("Failed to fetch module access data");
+      const accessData = await accessRes.json();
+      
+      // Fetch all modules to get free modules (price = 0)
+      const modulesRes = await fetch(`/api/modules`);
+      if (!modulesRes.ok) throw new Error("Failed to fetch modules data");
+      const modulesData = await modulesRes.json();
+      
+      // Find free modules (price = 0 or null)
+      const freeModules = modulesData.filter((module: any) => module.price === 0 || module.price === null);
+      
+      setModuleData({
+        ...accessData,
+        freeModules: freeModules
+      });
+    } catch (err: any) {
+      console.error("Error fetching module data:", err);
+    } finally {
+      setModuleLoading(false);
     }
   };
 
@@ -116,6 +147,16 @@ export default function AccountPage() {
                       {userData?.progress?.length || 0}
                     </span>
                   </div>
+                  <div className="flex justify-between items-center py-2 px-3 glass-effect rounded-md">
+                    <span className="text-muted-foreground text-sm">Доступно модулей:</span>
+                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                      {((moduleData?.freeModules?.length || 0) + 
+                        (moduleData?.modulePurchases?.length || 0) + 
+                        (moduleData?.moduleAccess?.filter((access: any) => 
+                          access.grantedByAdmin && !moduleData.modulePurchases?.some((purchase: any) => 
+                            purchase.moduleId === access.moduleId)).length || 0)) || 0}
+                    </span>
+                  </div>
                   {userData?.progress && userData.progress.length > 0 && (
                     <div className="py-2 px-3 glass-effect rounded-md">
                       <div className="text-muted-foreground text-sm mb-1">Последний урок:</div>
@@ -155,6 +196,7 @@ export default function AccountPage() {
               <TabsList className="mb-6 glass-effect">
                 <TabsTrigger value="profile" className="data-[state=active]:ai-glow">Профиль</TabsTrigger>
                 <TabsTrigger value="activity" className="data-[state=active]:ai-glow">Активность</TabsTrigger>
+                <TabsTrigger value="modules" className="data-[state=active]:ai-glow">Модули</TabsTrigger>
               </TabsList>
               
               <TabsContent value="profile">
@@ -241,6 +283,137 @@ export default function AccountPage() {
                         </div>
                         <p className="text-muted-foreground">Вы еще не завершили ни одного урока</p>
                         <p className="text-sm text-muted-foreground mt-2">Начните проходить уроки, чтобы увидеть свой прогресс</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="modules">
+                <div className="ai-card">
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold mb-2 ai-gradient-text">Доступные модули</h3>
+                    <p className="text-muted-foreground mb-6">Модули, к которым у вас есть доступ</p>
+                    {moduleLoading ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="mt-2 text-sm text-muted-foreground">Загрузка модулей...</p>
+                      </div>
+                                         ) : moduleData ? (
+                       <div className="space-y-4">
+                         {/* Show free modules */}
+                         {moduleData.freeModules && moduleData.freeModules.length > 0 && (
+                           <>
+                             {moduleData.freeModules.map((freeModule: any) => (
+                               <div key={freeModule.id} className="glass-effect rounded-xl p-4 border-l-4 border-green-500">
+                                 <div className="flex items-start justify-between">
+                                   <div className="flex-1">
+                                     <div className="font-medium text-green-600 dark:text-green-400">
+                                       {freeModule.title}
+                                     </div>
+                                   </div>
+                                   <div className="ml-4">
+                                     <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                                       <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                       </svg>
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                             ))}
+                           </>
+                         )}
+                         
+                         {/* Show purchased modules */}
+                         {moduleData.modulePurchases && moduleData.modulePurchases.length > 0 && (
+                           <>
+                             {moduleData.modulePurchases.map((purchase: any) => (
+                               <div key={purchase.id} className="glass-effect rounded-xl p-4 border-l-4 border-blue-500">
+                                 <div className="flex items-start justify-between">
+                                   <div className="flex-1">
+                                     <div className="font-medium text-blue-600 dark:text-blue-400 mb-1">
+                                       {purchase.module.title}
+                                     </div>
+                                     <div className="flex items-center gap-2">
+                                       <span className="text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-full">
+                                         Покупка
+                                       </span>
+                                       <span className="text-xs text-muted-foreground">
+                                         {new Date(purchase.createdAt).toLocaleDateString('ru-RU')}
+                                       </span>
+                                     </div>
+                                   </div>
+                                   <div className="ml-4">
+                                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                                       <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                       </svg>
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                             ))}
+                           </>
+                         )}
+                        
+                        {/* Show admin granted modules */}
+                        {moduleData.moduleAccess && moduleData.moduleAccess.filter((access: any) => access.grantedByAdmin).length > 0 && (
+                          <>
+                            {moduleData.moduleAccess
+                              .filter((access: any) => access.grantedByAdmin)
+                              .filter((access: any) => !moduleData.modulePurchases?.some((purchase: any) => purchase.moduleId === access.moduleId))
+                              .map((access: any) => (
+                                <div key={access.id} className="glass-effect rounded-xl p-4 border-l-4 border-purple-500">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                                                           <div className="font-medium text-purple-600 dark:text-purple-400 mb-1">
+                                       {access.module.title}
+                                     </div>
+                                     <div className="flex items-center gap-2">
+                                        <span className="text-xs bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-1 rounded-full">
+                                          Предоставлен админом
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {new Date(access.createdAt).toLocaleDateString('ru-RU')}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </>
+                        )}
+                        
+                                                 {/* Show if no additional modules available */}
+                         {(!moduleData.modulePurchases || moduleData.modulePurchases.length === 0) && 
+                          (!moduleData.moduleAccess || moduleData.moduleAccess.filter((access: any) => access.grantedByAdmin).length === 0) && 
+                          moduleData.freeModules && moduleData.freeModules.length > 0 && (
+                           <div className="text-center py-8 mt-4">
+                             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                               <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                               </svg>
+                             </div>
+                             <p className="text-muted-foreground">
+                               {moduleData.freeModules.length === 1 
+                                 ? 'Доступен только бесплатный модуль' 
+                                 : `Доступны только бесплатные модули (${moduleData.freeModules.length})`}
+                             </p>
+                             <p className="text-sm text-muted-foreground mt-2">Приобретите дополнительные модули для расширения обучения</p>
+                           </div>
+                         )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground">Не удалось загрузить данные о модулях</p>
                       </div>
                     )}
                   </div>

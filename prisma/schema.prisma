@@ -45,6 +45,8 @@ model User {
   progress      UserProgress[]
   logbook       Logbook[]
   goals         Goal[]
+  moduleAccess  ModuleAccess[]
+  modulePurchases ModulePurchase[]
 }
 
 model VerificationToken {
@@ -65,6 +67,8 @@ model Module {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   lessons     Lesson[]
+  moduleAccess ModuleAccess[]
+  modulePurchases ModulePurchase[]
 }
 
 model Lesson {
@@ -166,4 +170,32 @@ model Goal {
   updatedAt       DateTime @updatedAt
 
   @@index([userId])
+}
+
+model ModuleAccess {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId        String
+  module          Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  grantedByAdmin  Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+}
+
+model ModulePurchase {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId  String
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  price     Decimal
+  paymentId String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([moduleId])
 }
