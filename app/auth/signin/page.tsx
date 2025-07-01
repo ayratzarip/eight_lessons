@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Suspense } from 'react';
 import { LogIn } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useHydration } from '@/hooks/useHydration';
 
 function SignInContent() {
@@ -100,7 +101,15 @@ function SignInContent() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-muted-foreground">
-            Продолжая, вы соглашаетесь с нашими условиями использования
+            Продолжая, вы соглашаетесь 
+            с нашим{" "}
+                  <Link href="https://eightfaces.com/terms" className="underline">
+                    пользовательским соглашением
+                  </Link>{" "}
+                  и{" "}
+                  <Link href="https://eightfaces.com/privacy" className="underline">
+                    политикой конфиденциальности
+                  </Link>
           </p>
         </div>
       </div>
