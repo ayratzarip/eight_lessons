@@ -101,7 +101,7 @@ function SignInContent() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-muted-foreground">
-            Продолжая, вы соглашаетесь 
+            Продолжая, Вы соглашаетесь 
             с нашим{" "}
                   <Link href="https://eightfaces.com/terms" className="underline">
                     пользовательским соглашением
