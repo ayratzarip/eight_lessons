@@ -108,7 +108,7 @@ function SignInContent() {
                   </Link>{" "}
                   и{" "}
                   <Link href="https://eightfaces.com/privacy" className="underline">
-                    политикой конфиденциальности
+                    политикой конфиденциальности.
                   </Link>
           </p>
         </div>
