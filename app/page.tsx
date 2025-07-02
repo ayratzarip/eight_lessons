@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, BookOpen, CheckCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Header } from '@/components/ui/header';
 import { useHydration } from '@/hooks/useHydration';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Types for our data
 type Lesson = {
@@ -198,7 +199,7 @@ export default function Home() {
     }))
   };
 
-  // Не рендерим контент до завершения гидratации
+  // Не рендерим контент до завершения гидратации
   if (!isHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -281,13 +282,27 @@ export default function Home() {
                                       )}
                                     </div>
                                   ) : (
-                                    <div className="p-3 pl-6 text-sm text-muted-foreground flex items-center gap-2 cursor-not-allowed opacity-50">
-                                      <BookOpen className="h-3 w-3" />
-                                      <span>{lesson.title}</span>
-                                      <span className="ml-auto text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                                        🔒
-                                      </span>
-                </div>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="p-3 pl-6 text-sm text-muted-foreground flex items-center gap-2 cursor-not-allowed opacity-50">
+                                            <BookOpen className="h-3 w-3" />
+                                            <span>{lesson.title}</span>
+                                            <span className="ml-auto text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                                              🔒
+                                            </span>
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p>
+                                            {module.isAccessible 
+                                              ? "Доступ откроется после завершения предыдущего урока."
+                                              : "Урок заблокирован. Доступ к модулю открывается индивидуально. Подробнее — в разделе «Модули» личного кабинета."
+                                            }
+                                          </p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   )}
                                 </li>
                               ))}

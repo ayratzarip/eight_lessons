@@ -404,10 +404,10 @@ export default function AccountPage() {
                              </div>
                              <p className="text-muted-foreground">
                                {moduleData.freeModules.length === 1 
-                                 ? 'Доступен только бесплатный модуль' 
+                                 ? 'Доступен только первый модуль' 
                                  : `Доступны только бесплатные модули (${moduleData.freeModules.length})`}
                              </p>
-                             <p className="text-sm text-muted-foreground mt-2">Приобретите дополнительные модули для расширения обучения</p>
+                             <p className="text-sm text-muted-foreground mt-2">Доступ к следующим модулям открывается индивидуально, после консультации. Записаться на приём можно на главной странице проекта</p>
                            </div>
                          )}
                       </div>
